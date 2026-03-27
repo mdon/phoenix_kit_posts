@@ -2,15 +2,17 @@ defmodule PhoenixKitPosts.MixProject do
   use Mix.Project
 
   @version "0.1.0"
-  @source_url "https://github.com/mdon/phoenix_kit_posts"
+  @source_url "https://github.com/BeamLabEU/phoenix_kit_posts"
 
   def project do
     [
       app: :phoenix_kit_posts,
       version: @version,
-      elixir: "~> 1.15",
+      elixir: "~> 1.18",
+      elixirc_paths: elixirc_paths(Mix.env()),
       start_permanent: Mix.env() == :prod,
       deps: deps(),
+      aliases: aliases(),
 
       # Hex
       description:
@@ -33,11 +35,21 @@ defmodule PhoenixKitPosts.MixProject do
     ]
   end
 
+  defp elixirc_paths(:test), do: ["lib", "test/support"]
+  defp elixirc_paths(_), do: ["lib"]
+
+  defp aliases do
+    [
+      quality: ["format", "credo --strict", "dialyzer"],
+      "quality.ci": ["format --check-formatted", "credo --strict", "dialyzer"],
+      precommit: ["compile", "quality"]
+    ]
+  end
+
   defp deps do
     [
       # PhoenixKit provides the Module behaviour and Settings API.
-      # For local development, use: {:phoenix_kit, path: "../phoenix_kit"}
-      {:phoenix_kit, path: "../phoenix_kit"},
+      {:phoenix_kit, "~> 1.7"},
 
       # LiveView is needed for the admin pages.
       {:phoenix_live_view, "~> 1.0"},
@@ -55,7 +67,7 @@ defmodule PhoenixKitPosts.MixProject do
     [
       licenses: ["MIT"],
       links: %{"GitHub" => @source_url},
-      files: ~w(lib .formatter.exs mix.exs README.md LICENSE)
+      files: ~w(lib .formatter.exs mix.exs README.md CHANGELOG.md LICENSE)
     ]
   end
 
