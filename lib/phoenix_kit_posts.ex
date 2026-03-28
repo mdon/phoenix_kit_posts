@@ -830,7 +830,9 @@ defmodule PhoenixKitPosts do
     repo().transaction(fn ->
       # Remove existing dislike if present (mutual exclusion)
       case repo().get_by(PostDislike, post_uuid: post_uuid, user_uuid: user_uuid) do
-        nil -> :ok
+        nil ->
+          :ok
+
         dislike ->
           {:ok, _} = repo().delete(dislike)
           decrement_dislike_count(%Post{uuid: post_uuid})
@@ -923,7 +925,9 @@ defmodule PhoenixKitPosts do
     repo().transaction(fn ->
       # Remove existing like if present (mutual exclusion)
       case repo().get_by(PostLike, post_uuid: post_uuid, user_uuid: user_uuid) do
-        nil -> :ok
+        nil ->
+          :ok
+
         like ->
           {:ok, _} = repo().delete(like)
           decrement_like_count(%Post{uuid: post_uuid})

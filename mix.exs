@@ -50,9 +50,10 @@ defmodule PhoenixKitPosts.MixProject do
     [
       # PhoenixKit provides the Module behaviour and Settings API.
       {:phoenix_kit, "~> 1.7"},
+      {:phoenix_kit_comments, "~> 0.1"},
 
       # LiveView is needed for the admin pages.
-      {:phoenix_live_view, "~> 1.0"},
+      {:phoenix_live_view, "~> 1.1"},
 
       # Optional: add ex_doc for generating documentation
       {:ex_doc, "~> 0.34", only: :dev, runtime: false},

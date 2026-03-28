@@ -373,10 +373,6 @@ defmodule PhoenixKitPosts.Web.Posts do
     assign(socket, :groups, PhoenixKitPosts.list_groups())
   end
 
-  defp count_posts(opts) do
-    PhoenixKitPosts.count_posts(opts)
-  end
-
   defp maybe_add_filter(opts, _key, "all"), do: opts
 
   defp maybe_add_filter(opts, key, value) when value != "" and value != nil do

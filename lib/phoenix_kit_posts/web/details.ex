@@ -23,9 +23,6 @@ defmodule PhoenixKitPosts.Web.Details do
 
   require Logger
 
-  alias PhoenixKit.Modules.Comments
-
-  alias PhoenixKit.Modules.Publishing.Renderer
   alias PhoenixKit.Settings
   alias PhoenixKit.Users.Roles
   alias PhoenixKit.Utils.Routes
@@ -56,7 +53,7 @@ defmodule PhoenixKitPosts.Web.Details do
         liked_by_user = PhoenixKitPosts.post_liked_by?(post.uuid, current_user.uuid)
 
         # Load settings
-        comments_enabled = Comments.enabled?()
+        comments_enabled = PhoenixKitComments.enabled?()
         likes_enabled = Settings.get_setting("posts_likes_enabled", "true") == "true"
         show_view_count = Settings.get_setting("posts_show_view_count", "true") == "true"
 
@@ -188,7 +185,15 @@ defmodule PhoenixKitPosts.Web.Details do
   defp format_status_badge_class(_), do: "badge badge-ghost"
 
   defp render_markdown_content(content) when is_binary(content) and content != "" do
-    Renderer.render_markdown(content)
+    case Earmark.as_html(content, %Earmark.Options{
+           code_class_prefix: "language-",
+           smartypants: true,
+           gfm: true,
+           escape: false
+         }) do
+      {:ok, html, _warnings} -> html
+      {:error, _html, _errors} -> ""
+    end
   end
 
   defp render_markdown_content(_), do: ""
