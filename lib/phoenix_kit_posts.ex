@@ -270,7 +270,7 @@ defmodule PhoenixKitPosts do
   end
 
   @impl PhoenixKit.Module
-  def css_sources, do: ["phoenix_kit_posts"]
+  def css_sources, do: [:phoenix_kit_posts]
 
   # ============================================================================
   # CRUD Operations
