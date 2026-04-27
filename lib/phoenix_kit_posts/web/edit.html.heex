@@ -1,9 +1,4 @@
-  <%!-- overflow-x-clip contains transient horizontal overflow during the leaf
-       editor's mount (sticky-toolbar reflow) so it never reaches the document
-       level. Without this, a brief scrollbar appearance reduces viewport width
-       enough to flicker the lg:drawer-open media query, causing the admin
-       sidebar to close-and-reopen on initial page load. --%>
-  <div class="p-6 overflow-x-clip">
+  <div class="p-6">
     <%!-- Header Section --%>
     <.admin_page_header back={Routes.path("/admin/posts")} />
 
