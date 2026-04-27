@@ -4,7 +4,7 @@ defmodule PhoenixKitPosts do
 
   Provides complete API for the social posts system including CRUD operations,
   counter cache management, tag assignment, and group organization.
-  Comments are now handled by the standalone `PhoenixKit.Modules.Comments` module.
+  Comments are now handled by the standalone `PhoenixKitComments` module.
 
   ## Features
 
@@ -1511,4 +1511,15 @@ defmodule PhoenixKitPosts do
   defp repo do
     PhoenixKit.RepoHelper.repo()
   end
+
+  @impl PhoenixKit.Module
+  @doc """
+  OTP app name(s) Tailwind should scan for utility-class strings.
+
+  Without this, the parent app's Tailwind build skips phoenix_kit_posts
+  heex files and any class only used here (e.g. arbitrary values, edge
+  utilities like `overflow-x-clip`) will be missing from the compiled
+  CSS — silently breaking the layout.
+  """
+  def css_sources, do: [:phoenix_kit_posts]
 end
