@@ -1,5 +1,12 @@
 # Changelog
 
+## 0.1.3 - 2026-04-29
+
+### Fixed
+- Fix post edit page layout jumping/sidebar collapse when leaf editor mounts — switched the 2:1 row from flex to CSS grid (`grid-cols-3` + `col-span-2`) with `min-w-0` on both columns and `overflow-hidden` on the content column (PR #6)
+- Fix runtime crash on post details page when comments are enabled — `live_component` was referencing the non-existent `PhoenixKit.Modules.Comments.Web.CommentsComponent`; now correctly uses `PhoenixKitComments.Web.CommentsComponent`
+- Align stale deprecation docstrings in legacy comment/like/dislike schemas to the current `PhoenixKitComments.*` namespace
+
 ## 0.1.2 - 2026-04-11
 
 ### Fixed
