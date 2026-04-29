@@ -4,7 +4,7 @@ defmodule PhoenixKitPosts do
 
   Provides complete API for the social posts system including CRUD operations,
   counter cache management, tag assignment, and group organization.
-  Comments are now handled by the standalone `PhoenixKit.Modules.Comments` module.
+  Comments are now handled by the standalone `PhoenixKitComments` module.
 
   ## Features
 
