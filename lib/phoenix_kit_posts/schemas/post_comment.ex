@@ -3,7 +3,7 @@ defmodule PhoenixKitPosts.PostComment do
   Legacy schema for post comments.
 
   Retained for backward compatibility with the `phoenix_kit_post_comments` table.
-  New comments should use `PhoenixKit.Modules.Comments.Comment` instead.
+  New comments should use `PhoenixKitComments.Comment` instead.
   """
   use Ecto.Schema
   import Ecto.Changeset

@@ -218,7 +218,7 @@
       <%!-- Comments Section (via standalone CommentsComponent) --%>
       <%= if @comments_enabled do %>
         <.live_component
-          module={PhoenixKit.Modules.Comments.Web.CommentsComponent}
+          module={PhoenixKitComments.Web.CommentsComponent}
           id={"post-comments-#{@post.uuid}"}
           resource_type="post"
           resource_uuid={@post.uuid}
