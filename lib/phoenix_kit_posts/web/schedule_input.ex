@@ -15,10 +15,19 @@ defmodule PhoenixKitPosts.Web.ScheduleInput do
 
   alias PhoenixKit.Utils.Date, as: DateUtils
 
-  @doc "The editor's timezone value (an IANA id or a legacy offset)."
+  @doc """
+  The editor's timezone value (an IANA id or a legacy offset): their own
+  when set, else the site's — core's `get_user_timezone/1` rule, with a
+  blank value and a user map without the column both counting as "not set"
+  (core's newer releases read a blank the same way).
+  """
   @spec editor_tz(map() | nil) :: String.t()
-  def editor_tz(%{user_timezone: _} = user), do: DateUtils.get_user_timezone(user)
-  def editor_tz(_user), do: DateUtils.get_user_timezone(%{user_timezone: nil})
+  def editor_tz(user) do
+    case user do
+      %{user_timezone: tz} when is_binary(tz) and tz != "" -> tz
+      _ -> DateUtils.get_user_timezone(%{user_timezone: nil})
+    end
+  end
 
   @doc "A stored UTC instant as the input's value in the editor's zone."
   @spec to_input(DateTime.t() | NaiveDateTime.t() | nil, map() | nil) :: String.t() | nil

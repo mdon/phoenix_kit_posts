@@ -73,7 +73,7 @@ defmodule PhoenixKitPosts.Web.Edit do
             "type" => post.type || "post",
             "status" => post.status || "draft",
             "slug" => post.slug || "",
-            "scheduled_at" => format_datetime_local(post.scheduled_at, current_user)
+            "scheduled_at" => ScheduleInput.to_input(post.scheduled_at, current_user)
           }
 
           {:noreply,
@@ -571,10 +571,6 @@ defmodule PhoenixKitPosts.Web.Edit do
       post_params
     end
   end
-
-  # The scheduled_at input is a wall clock in the editor's zone; see
-  # `ScheduleInput` for both directions.
-  defp format_datetime_local(value, user), do: ScheduleInput.to_input(value, user)
 
   # Convert scheduled_at from the editor's local time to UTC when saving. A
   # value that does not parse is left as typed for the changeset to reject;
