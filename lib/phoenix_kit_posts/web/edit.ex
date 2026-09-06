@@ -27,6 +27,7 @@ defmodule PhoenixKitPosts.Web.Edit do
   alias PhoenixKit.Users.Roles
   alias PhoenixKit.Utils.Routes
   alias PhoenixKit.Utils.Slug
+  alias PhoenixKitPosts.Web.ScheduleInput
 
   # `get_editor_mode/0` only exists in newer phoenix_kit builds, but our pin
   # still allows older ones — `default_editor_mode/0` probes for it at runtime,
@@ -72,7 +73,7 @@ defmodule PhoenixKitPosts.Web.Edit do
             "type" => post.type || "post",
             "status" => post.status || "draft",
             "slug" => post.slug || "",
-            "scheduled_at" => format_datetime_local(post.scheduled_at, current_user)
+            "scheduled_at" => ScheduleInput.to_input(post.scheduled_at, current_user)
           }
 
           {:noreply,
@@ -571,75 +572,29 @@ defmodule PhoenixKitPosts.Web.Edit do
     end
   end
 
-  # Format datetime for HTML datetime-local input (YYYY-MM-DDTHH:MM)
-  # Converts from UTC to user's local timezone for display
-  defp format_datetime_local(nil, _user), do: nil
-
-  defp format_datetime_local(%DateTime{} = dt, user) do
-    # Shift from UTC to user's timezone for display
-    local_dt = shift_to_user_timezone(dt, user)
-    Calendar.strftime(local_dt, "%Y-%m-%dT%H:%M")
-  end
-
-  defp format_datetime_local(%NaiveDateTime{} = dt, user) do
-    utc_dt = DateTime.from_naive!(dt, "Etc/UTC")
-    format_datetime_local(utc_dt, user)
-  end
-
-  defp format_datetime_local(_, _user), do: nil
-
-  # Convert scheduled_at from user's local time to UTC when saving
+  # Convert scheduled_at from the editor's local time to UTC when saving,
+  # and keep the zone it was typed in next to it. A value that does not
+  # parse is left as typed for the changeset to reject; a DateTime passes
+  # through.
   defp convert_scheduled_at_to_utc(post_params, user) do
+    # The zone is the server's to say: whatever the form carried is dropped,
+    # and it is set only alongside a schedule this editor typed.
+    post_params = Map.delete(post_params, "time_zone")
+
     case Map.get(post_params, "scheduled_at") do
-      nil ->
-        post_params
+      value when is_binary(value) and value != "" ->
+        case ScheduleInput.from_input(value, user) do
+          {:ok, utc} ->
+            post_params
+            |> Map.put("scheduled_at", utc)
+            |> Map.put("time_zone", ScheduleInput.editor_tz(user))
 
-      "" ->
-        post_params
-
-      local_time_str when is_binary(local_time_str) ->
-        # datetime-local gives us "YYYY-MM-DDTHH:MM", need to add seconds
-        case NaiveDateTime.from_iso8601(local_time_str <> ":00") do
-          {:ok, naive_dt} ->
-            utc_dt = shift_from_user_timezone(naive_dt, user)
-            Map.put(post_params, "scheduled_at", utc_dt)
-
-          _ ->
+          :error ->
             post_params
         end
 
       _ ->
-        # Already a DateTime, pass through
         post_params
-    end
-  end
-
-  # Shift datetime from user's local timezone to UTC
-  defp shift_from_user_timezone(naive_dt, user) do
-    offset_str = (user && user.user_timezone) || "0"
-
-    case Integer.parse(offset_str) do
-      {offset_hours, _} ->
-        # Convert to UTC by subtracting the offset (local - offset = UTC)
-        utc_naive = NaiveDateTime.add(naive_dt, -offset_hours * 3600, :second)
-        DateTime.from_naive!(utc_naive, "Etc/UTC")
-
-      _ ->
-        DateTime.from_naive!(naive_dt, "Etc/UTC")
-    end
-  end
-
-  # Shift datetime from UTC to user's local timezone
-  defp shift_to_user_timezone(datetime, user) do
-    offset_str = (user && user.user_timezone) || "0"
-
-    case Integer.parse(offset_str) do
-      {offset_hours, _} ->
-        # Convert from UTC to local by adding the offset
-        DateTime.add(datetime, offset_hours * 3600, :second)
-
-      _ ->
-        datetime
     end
   end
 end

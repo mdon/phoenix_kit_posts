@@ -80,6 +80,7 @@ defmodule PhoenixKitPosts.Post do
 
   alias PhoenixKit.Utils.Date, as: UtilsDate
   alias PhoenixKit.Utils.Slug
+  alias PhoenixKit.Utils.TimeZone
 
   @primary_key {:uuid, UUIDv7, autogenerate: true}
   @foreign_key_type UUIDv7
@@ -93,6 +94,7 @@ defmodule PhoenixKitPosts.Post do
           type: String.t(),
           status: String.t(),
           scheduled_at: DateTime.t() | nil,
+          time_zone: String.t() | nil,
           published_at: DateTime.t() | nil,
           repost_url: String.t() | nil,
           slug: String.t(),
@@ -120,6 +122,10 @@ defmodule PhoenixKitPosts.Post do
     field(:type, :string, default: "post")
     field(:status, :string, default: "draft")
     field(:scheduled_at, :utc_datetime)
+    # The zone `scheduled_at` was typed in — an IANA id or a legacy offset,
+    # the value as core keeps it — so the wall clock the editor meant can be
+    # re-resolved on its own. Nil on rows written before core V184.
+    field(:time_zone, :string)
     field(:published_at, :utc_datetime)
     field(:repost_url, :string)
     field(:slug, :string)
@@ -184,6 +190,7 @@ defmodule PhoenixKitPosts.Post do
       :type,
       :status,
       :scheduled_at,
+      :time_zone,
       :published_at,
       :repost_url,
       :slug,
@@ -194,6 +201,8 @@ defmodule PhoenixKitPosts.Post do
     |> validate_inclusion(:status, ["draft", "public", "unlisted", "scheduled"])
     |> validate_length(:title, max: 255)
     |> validate_length(:sub_title, max: 500)
+    |> validate_length(:time_zone, max: 64)
+    |> validate_time_zone()
     |> validate_scheduled_at()
     |> maybe_generate_slug()
     |> unique_constraint(:slug)
@@ -231,6 +240,14 @@ defmodule PhoenixKitPosts.Post do
   def repost?(_), do: false
 
   # Private Functions
+
+  # A zone value is an IANA id or a legacy offset — what core stores; any
+  # other string would make the row unresolvable later.
+  defp validate_time_zone(changeset) do
+    validate_change(changeset, :time_zone, fn :time_zone, value ->
+      if TimeZone.valid?(value), do: [], else: [time_zone: "is not a timezone"]
+    end)
+  end
 
   defp validate_scheduled_at(changeset) do
     status = get_field(changeset, :status)
