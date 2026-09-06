@@ -572,15 +572,21 @@ defmodule PhoenixKitPosts.Web.Edit do
     end
   end
 
-  # Convert scheduled_at from the editor's local time to UTC when saving. A
-  # value that does not parse is left as typed for the changeset to reject;
-  # a DateTime passes through.
+  # Convert scheduled_at from the editor's local time to UTC when saving,
+  # and keep the zone it was typed in next to it. A value that does not
+  # parse is left as typed for the changeset to reject; a DateTime passes
+  # through.
   defp convert_scheduled_at_to_utc(post_params, user) do
     case Map.get(post_params, "scheduled_at") do
       value when is_binary(value) and value != "" ->
         case ScheduleInput.from_input(value, user) do
-          {:ok, utc} -> Map.put(post_params, "scheduled_at", utc)
-          :error -> post_params
+          {:ok, utc} ->
+            post_params
+            |> Map.put("scheduled_at", utc)
+            |> Map.put("time_zone", ScheduleInput.editor_tz(user))
+
+          :error ->
+            post_params
         end
 
       _ ->

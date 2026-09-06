@@ -16,3 +16,31 @@ defmodule PhoenixKitPosts.Integration.ScheduleInputFallbackTest do
     assert ScheduleInput.editor_tz(nil) == site
   end
 end
+
+defmodule PhoenixKitPosts.Integration.ScheduledZoneTest do
+  @moduledoc """
+  A scheduled post carries the zone its schedule was typed in (core V184).
+  """
+  use PhoenixKitPosts.DataCase, async: false
+
+  alias PhoenixKitPosts.Post
+
+  test "the zone is cast, bounded and stored next to scheduled_at" do
+    user = user_fixture()
+
+    {:ok, post} =
+      PhoenixKitPosts.create_post(user.uuid, %{
+        "title" => "Scheduled",
+        "content" => "…",
+        "type" => "post",
+        "status" => "draft",
+        "scheduled_at" => ~U[2026-07-15 07:00:00Z],
+        "time_zone" => "Europe/Tallinn"
+      })
+
+    assert Repo.get!(Post, post.uuid).time_zone == "Europe/Tallinn"
+
+    changeset = Post.changeset(%Post{}, %{"time_zone" => String.duplicate("x", 65)})
+    assert {"should be at most %{count} character(s)", _} = changeset.errors[:time_zone]
+  end
+end
