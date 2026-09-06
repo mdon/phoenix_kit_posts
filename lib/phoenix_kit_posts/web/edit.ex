@@ -577,6 +577,10 @@ defmodule PhoenixKitPosts.Web.Edit do
   # parse is left as typed for the changeset to reject; a DateTime passes
   # through.
   defp convert_scheduled_at_to_utc(post_params, user) do
+    # The zone is the server's to say: whatever the form carried is dropped,
+    # and it is set only alongside a schedule this editor typed.
+    post_params = Map.delete(post_params, "time_zone")
+
     case Map.get(post_params, "scheduled_at") do
       value when is_binary(value) and value != "" ->
         case ScheduleInput.from_input(value, user) do

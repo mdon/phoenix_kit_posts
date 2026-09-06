@@ -40,7 +40,11 @@ defmodule PhoenixKitPosts.Integration.ScheduledZoneTest do
 
     assert Repo.get!(Post, post.uuid).time_zone == "Europe/Tallinn"
 
-    changeset = Post.changeset(%Post{}, %{"time_zone" => String.duplicate("x", 65)})
-    assert {"should be at most %{count} character(s)", _} = changeset.errors[:time_zone]
+    changeset = Post.changeset(%Post{}, %{"time_zone" => "bogus"})
+    assert {"is not a timezone", _} = changeset.errors[:time_zone]
+
+    for ok <- ["Europe/Tallinn", "2", "5.5", "0"] do
+      refute Post.changeset(%Post{}, %{"time_zone" => ok}).errors[:time_zone], ok
+    end
   end
 end

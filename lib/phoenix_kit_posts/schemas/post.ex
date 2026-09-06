@@ -80,6 +80,7 @@ defmodule PhoenixKitPosts.Post do
 
   alias PhoenixKit.Utils.Date, as: UtilsDate
   alias PhoenixKit.Utils.Slug
+  alias PhoenixKit.Utils.TimeZone
 
   @primary_key {:uuid, UUIDv7, autogenerate: true}
   @foreign_key_type UUIDv7
@@ -201,6 +202,7 @@ defmodule PhoenixKitPosts.Post do
     |> validate_length(:title, max: 255)
     |> validate_length(:sub_title, max: 500)
     |> validate_length(:time_zone, max: 64)
+    |> validate_time_zone()
     |> validate_scheduled_at()
     |> maybe_generate_slug()
     |> unique_constraint(:slug)
@@ -238,6 +240,14 @@ defmodule PhoenixKitPosts.Post do
   def repost?(_), do: false
 
   # Private Functions
+
+  # A zone value is an IANA id or a legacy offset — what core stores; any
+  # other string would make the row unresolvable later.
+  defp validate_time_zone(changeset) do
+    validate_change(changeset, :time_zone, fn :time_zone, value ->
+      if TimeZone.valid?(value), do: [], else: [time_zone: "is not a timezone"]
+    end)
+  end
 
   defp validate_scheduled_at(changeset) do
     status = get_field(changeset, :status)
